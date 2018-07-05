@@ -15,7 +15,7 @@ let userSchema = new Schema(
     articles: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'articles',
+        ref: "articles",
         default: []
       }
     ]

@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
-const { article } = require("../models");
+const { article, user } = require("../models");
 
 module.exports = {
   getArticles: function(req, res) {
-    let params = {}
+    let params = {};
     if (req.query.author) {
       params.author = { $in: req.query.author };
     }
@@ -12,6 +12,7 @@ module.exports = {
     }
     article
       .find(params)
+      .populate("author")
       .then(articles => {
         res.status(200).json({
           msg: "Successfully get list of articles",
@@ -45,15 +46,22 @@ module.exports = {
     let payload = {
       title: req.body.title,
       content: req.body.content,
-      author: req.body.author,
-      category: req.body.category
+      author: req.body.userId,
+      category: req.body.category,
+      image: req.file.cloudStoragePublicUrl
     };
     article
       .create(payload)
       .then(newArticle => {
-        res.status(201).json({
-          msg: "Successfully add new article!",
-          newArticle
+        user.findById(newArticle.author).then(author => {
+          author.articles.push(newArticle._id);
+          author.save().then(updatedAuthor => {
+            res.status(201).json({
+              msg: "Successfully add new article!",
+              newArticle,
+              updatedAuthor
+            });
+          });
         });
       })
       .catch(err => {
@@ -67,9 +75,16 @@ module.exports = {
     article
       .findByIdAndRemove(articleId)
       .then(article => {
-        res.status(200).json({
-          msg: "Successfully delete the article!",
-          article
+        user.findById(article.author).then(author => {
+          author.articles.pull(article._id);
+          author.articles.pull(null);
+          author.save().then(updatedAuthor => {
+            res.status(200).json({
+              msg: "Successfully delete the article!",
+              article,
+              updatedAuthor
+            });
+          });
         });
       })
       .catch(err => {
@@ -99,7 +114,7 @@ module.exports = {
         res.status(200).json({
           msg: "Successfully update the article!",
           article
-        })
+        });
       })
       .catch(err => {
         if (err) {

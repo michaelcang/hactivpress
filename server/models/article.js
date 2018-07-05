@@ -5,22 +5,22 @@ let articleSchema = new Schema(
   {
     title: {
       type: String,
-      required: [true, 'Title is required']
+      required: [true, "Title is required"]
     },
     content: {
       type: String,
-      required: [true, 'Content is required']
+      required: [true, "Content is required"]
     },
     author: {
-      type: String,
-      ref: 'users',
-      required: [true, 'Author is required']
+      type: Schema.Types.ObjectId,
+      ref: "users",
+      required: [true, "Author is required"]
     },
-    category : {
+    category: {
       type: String,
-      required: [true, 'Category is required']
+      required: [true, "Category is required"]
     },
-    image : String
+    image: String
   },
   { timestamps: true }
 );

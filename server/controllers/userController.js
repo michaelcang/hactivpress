@@ -29,7 +29,8 @@ module.exports = {
           .create(payload)
           .then(newUser => {
             let username = newUser.username;
-            let token = jwt.sign({ username }, SECRET_KEY);
+            let userId = newUser._id;
+            let token = jwt.sign({ username, userId }, SECRET_KEY);
             res.status(201).json({
               msg: "Successfully register new user",
               token,
@@ -44,7 +45,8 @@ module.exports = {
   },
   login: function(req, res) {
     let username = req.body.username;
-    let token = jwt.sign({ username }, SECRET_KEY);
+    let userId = req.body.id;
+    let token = jwt.sign({ username, userId }, SECRET_KEY);
     res.status(200).json({
       message: "Successfully login",
       token,
