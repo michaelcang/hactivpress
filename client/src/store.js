@@ -86,6 +86,122 @@ export default new Vuex.Store({
         text: 'You are logged out!',
         icon: 'success'
       })
+    },
+    statusLoggedIn ({ commit }) {
+      commit('isLoggedIn', true)
+      commit('username', localStorage.getItem('username'))
+    },
+    getArticles ({ commit }, payload) {
+      let token = localStorage.getItem('token')
+      let config = { headers: { token } }
+      axios
+        .get('http://localhost:3000/article', config)
+        .then(({ data }) => {
+          commit('articles', data.articles)
+        })
+        .catch(err => {
+          console.log(err)
+          swal({
+            title: 'Error!',
+            text: 'Our Server is currently down. Please wait a moment'
+          })
+        })
+    },
+    getOneArticle ({ commit }, payload) {
+      let token = localStorage.getItem('token')
+      let config = { headers: { token } }
+      axios
+        .get(`http://localhost:3000/article/${payload}`, config)
+        .then(({ data }) => {
+          commit('articles', data.article)
+        })
+        .catch(err => {
+          console.log(err)
+          swal({
+            title: 'Error!',
+            text: 'Our Server is currently down. Please wait a moment'
+          })
+        })
+    },
+    addArticle (context, payload) {
+      let token = localStorage.getItem('token')
+      let config = { headers: { token } }
+      axios
+        .post('http://localhost:3000/article', payload, config)
+        .then(({ data }) => {
+          if (data.body) {
+            swal({
+              title: 'Warning!',
+              text: 'Please fill all of the boxes',
+              icon: 'error'
+            })
+          } else {
+            router.push(`/article/${data.newArticle._id}`)
+            swal({
+              title: 'Successfully add new article',
+              icon: 'success'
+            })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    updateArticle: function (context, payload) {
+      let token = localStorage.getItem('token')
+      let config = { headers: { token } }
+      axios
+        .put(`http://localhost:3000/article/${payload.id}`, payload, config)
+        .then(({ data }) => {
+          context.dispatch('getArticles')
+          swal({
+            title: 'Successfully update your article',
+            icon: 'success'
+          })
+        })
+        .catch(err => {
+          console.log(err)
+          swal({
+            title: 'Warning!',
+            text: JSON.stringify(err),
+            icon: 'error'
+          })
+        })
+    },
+    deleteArticle: function (context, payload) {
+      let token = localStorage.getItem('token')
+      let config = { headers: { token } }
+      swal({
+        title: 'Are you sure?',
+        text: 'Once deleted, you will not be able to recover this article!',
+        icon: 'warning',
+        buttons: true,
+        dangerMode: true
+      })
+        .then((willDelete) => {
+          if (willDelete) {
+            axios
+              .delete(`http://localhost:3000/article/${payload}`, config)
+              .then(({ data }) => {
+                if (data.body) {
+                  swal({
+                    title: 'Warning!',
+                    text: JSON.stringify(data),
+                    icon: 'error'
+                  })
+                } else {
+                  swal({
+                    text: 'Successfully delete article!',
+                    icon: 'success'
+                  })
+                  context.dispatch('getArticles')
+                }
+              })
+              .catch(err => {
+                console.log(err)
+              })
+          }
+        })
     }
   }
 })

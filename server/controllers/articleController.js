@@ -47,9 +47,11 @@ module.exports = {
       title: req.body.title,
       content: req.body.content,
       author: req.body.userId,
-      category: req.body.category,
-      image: req.file.cloudStoragePublicUrl
+      category: req.body.category
     };
+    if (req.file.cloudStoragePublicUrl) {
+      payload.image = req.file.cloudStoragePublicUrl
+    }
     article
       .create(payload)
       .then(newArticle => {
